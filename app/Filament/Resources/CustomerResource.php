@@ -43,48 +43,89 @@ class CustomerResource extends Resource
                             ->minLength(2)
                             ->maxLength(50),
 
-                        Textarea::make('address')
+                            
+                        Repeater::make('addresses')
+                        ->label('Address Book')
+                        ->minItems(1)
+                        ->schema([
+
+                            Grid::make(2)->schema([
+                                Select::make('country')
+                                    ->label('Country')
+                                    ->options(
+                                        collect(json_decode(file_get_contents(public_path('countries.json')), true))
+                                            ->mapWithKeys(fn($val, $key) => [$key => $val['name']])
+                                    )
+                                    ->required()
+                                    ->default('SA')
+                                    ->live()
+                                    // ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire, $component) {
+                                    //         $contactInfo = $get('Contact Info') ?? [];
+                                    //         foreach ($contactInfo as $index => $contactItem) {
+                                    //             $livewire->validateOnly("Contact Info.{$index}.phone");
+                                    //         }
+                                    //     })
+                                    ,
+
+                                TextInput::make('city')
+                                    ->label('City')
+                                    ->required()
+                                    ->maxLength(255),
+
+                            ]),
+
+                            Textarea::make('address')
                             ->label('Address')
                             ->rows(4)
                             ->minLength(2)
                             ->maxLength(1024),
-
-                        Toggle::make('show_contact')
-                            ->label('Has Contact Information')
-                            ->onIcon('heroicon-m-bolt')
-                            ->offIcon('heroicon-m-user')
-                            ->onColor('success')                        
-                            ->live()
-                        ,
-
-                        Section::make('Contact Info')
-                        ->hidden(fn ($get) => !$get('show_contact'))
-                        ->schema([
-                            TextInput::make('email')
-                                ->label(
-                                    fn() => 'Email'
-                                )
-                                ->email()
-                                ->required()
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(function (callable $get,        callable $set, $state) {
-                                    $address = $get('address') ?? '';
-                                    $set('address', trim($address . "\n" . strtoupper($state)));
-                                })
-                            ,
-
-                            TextInput::make('phone')
-                                ->label(
-                                    fn() => 'Phone'
-                                )
-                                ->required()
-                                ->rules([new SaudiPhone()])
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(function ($livewire, $component) {
-                                    $livewire->validateOnly($component->getStatePath());
-                                })
-                            ,
+                            
+                            Repeater::make('contact_info')
+                            ->label("Contact Info")
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('email')
+                                    ->label(
+                                        fn() => 'Email'
+                                    )
+                                    ->email()
+                                    ->required()
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (callable $get, callable $set, $state) {
+                                        $address = $get('../../address') ?? '';
+                                        $set('../../address', trim($address . "\n" . strtoupper($state)));
+                                    })
+                                ,
+    
+                                TextInput::make('phone')
+                                    ->label(
+                                        fn() => 'Phone'
+                                    )
+                                    ->required()
+                                    ->rule(function (callable $get) {
+                                        $countryCode = $get('../../country');
+                                        if($countryCode){
+                                            return new \App\Rules\CountryPhonePrefix($countryCode);
+                                        }
+                                    })
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($livewire, $component) {
+                                        $livewire->validateOnly($component->getStatePath());
+                                    })
+                                    ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                        // remove "+" from value 
+                                        $state = str_replace('+',"",$state);
+                                        $countryKey = $get('../../country');
+                                        $prefix = static::getPrefixFromCountry($countryKey);
+                                        // if prefix is not written add it 
+                                        if ($prefix && !str_starts_with($state, $prefix)) {
+                                            $set('phone', $prefix . $state);
+                                        }
+                                    })
+                                ,
+                            ])
                         ])
+
 
                     ])
             ]);
@@ -131,5 +172,14 @@ class CustomerResource extends Resource
             'create' => Pages\CreateCustomer::route('/create'),
             'edit' => Pages\EditCustomer::route('/{record}/edit'),
         ];
+    }
+
+    protected static function getPrefixFromCountry(?string $countryCode): ?string
+    {
+        if (!$countryCode) return null;
+
+        $countries = json_decode(file_get_contents(public_path('countries.json')), true);
+
+        return $countries[$countryCode]['prefix'] ?? null;
     }
 }

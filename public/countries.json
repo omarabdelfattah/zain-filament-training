@@ -1,11 +1,12 @@
 {
+
+    "SA": {
+      "name": "Saudi Arabia",
+      "prefix": "050"
+    },
     "EG": {
       "name": "Egypt",
       "prefix": "20"
-    },
-    "SA": {
-      "name": "Saudi Arabia",
-      "prefix": "966"
     },
     "AE": {
       "name": "United Arab Emirates",
