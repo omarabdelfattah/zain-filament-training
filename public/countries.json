@@ -1,0 +1,23 @@
+{
+    "EG": {
+      "name": "Egypt",
+      "prefix": "20"
+    },
+    "SA": {
+      "name": "Saudi Arabia",
+      "prefix": "966"
+    },
+    "AE": {
+      "name": "United Arab Emirates",
+      "prefix": "971"
+    },
+    "JO": {
+      "name": "Jordan",
+      "prefix": "962"
+    },
+    "KW": {
+      "name": "Kuwait",
+      "prefix": "965"
+    }
+  }
+  
