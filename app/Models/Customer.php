@@ -11,6 +11,5 @@ class Customer extends Model
 
     protected $casts = [
         'show_contact' => 'boolean',
-        'addresses' => 'array',
     ];
 }

@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
+
 use Closure;
 
 class CustomerResource extends Resource
@@ -41,94 +42,39 @@ class CustomerResource extends Resource
                             ->minLength(2)
                             ->maxLength(50),
 
-                        // Textarea::make('address')
-                        //     ->label('Address')
-                        //     ->rows(4)
-                        //     ->minLength(2)
-                        //     ->maxLength(1024),
-
-                        // TODO: refactor this after finishing
-                        TextInput::make('email')
-                            ->label(
-                                fn() => 'Email'
-                            )
-                            ->email()
-                            ->required()
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (callable $get,        callable $set, $state) {
-                                $address = $get('address') ?? '';
-                                $set('address', trim($address . "\n" . strtoupper($state)));
-                            })
-                        // ->visible(fn ($get) => $get('show_contact'))
-                        ,
+                        Textarea::make('address')
+                            ->label('Address')
+                            ->rows(4)
+                            ->minLength(2)
+                            ->maxLength(1024),
 
                         Toggle::make('show_contact')
                             ->label('Has Contact Information')
                             ->onIcon('heroicon-m-bolt')
                             ->offIcon('heroicon-m-user')
                             ->onColor('success')                        
-                            ->live(),
+                            ->live()
+                        ,
 
-                        // This part will only show if toggle is on
-                        Repeater::make('addresses')
-                        ->minItems(1)
+                        Section::make('Contact Info')
+                        ->hidden(fn ($get) => !$get('show_contact'))
                         ->schema([
-                            Grid::make(3)->schema([
-                                Select::make('country')
-                                    ->label('Country')
-                                    ->options(
-                                        collect(json_decode(file_get_contents(public_path('countries.json')), true))
-                                            ->mapWithKeys(fn($val, $key) => [$key => $val['name']])
-                                    )
-                                    ->required(),
+                            TextInput::make('email')
+                                ->label(
+                                    fn() => 'Email'
+                                )
+                                ->email()
+                                ->required()
+                            ,
 
-                                TextInput::make('city')
-                                    ->label('City')
-                                    ->required()
-                                    ->maxLength(255),
-
-                                TextInput::make('fax')
-                                    ->label('Fax')
-                                    ->nullable()
-                                    ->maxLength(20),
-                           ]),
-
-                            Textarea::make('address')
-                                ->label('Full address')
-                                ->rows(4)
-                                ->minLength(2)
-                                ->maxLength(1024),
-
-                            Repeater::make('contact_info')
-                            ->label('Contact info')
-                            ->schema([
-                                TextInput::make('phone')
-                                    ->label('Phone')
-                                    ->live(onBlur: true)
-                                    ->required()
-                                    ->rules(['regex:/^050[0-9]{8}$/'])
-                                    ->validationMessages([
-                                        'regex' => 'Phone must be a valid Saudi number starting with 050 and followed by 8 digits.',
-                                    ])
-                                    ->afterStateUpdated(function ($livewire, $component) {
-                                        $livewire->validateOnly($component->getStatePath());
-                                    }),
-                                TextInput::make('tel')
-                                    ->label('Telephone')
-                                    ->required(),
-
-                            ])
-                            ->columns(2),
+                            TextInput::make('phone')
+                                ->label(
+                                    fn() => 'Phone'
+                                )
+                                ->required()
+                            ,
                         ])
-                        ->rules([
-                            function () {
-                                return function (string $attribute, $value, Closure $fail) {
-                                    if (empty($value) || count($value) === 0) {
-                                        $fail('At least one item is required.');
-                                    }
-                                };
-                            },
-                        ])
+
                     ])
             ]);
     }
