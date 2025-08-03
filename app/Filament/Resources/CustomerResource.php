@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
+use App\Rules\SaudiPhone;
 
 use Closure;
 
@@ -65,6 +66,11 @@ class CustomerResource extends Resource
                                 )
                                 ->email()
                                 ->required()
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function (callable $get,        callable $set, $state) {
+                                    $address = $get('address') ?? '';
+                                    $set('address', trim($address . "\n" . strtoupper($state)));
+                                })
                             ,
 
                             TextInput::make('phone')
@@ -72,6 +78,11 @@ class CustomerResource extends Resource
                                     fn() => 'Phone'
                                 )
                                 ->required()
+                                ->rules([new SaudiPhone()])
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function ($livewire, $component) {
+                                    $livewire->validateOnly($component->getStatePath());
+                                })
                             ,
                         ])
 
