@@ -47,7 +47,18 @@ class CustomerResource extends Resource
                         Repeater::make('addresses')
                         ->label('Address Book')
                         ->minItems(1)
-                        ->schema([
+                        ->live()
+                        ->afterStateUpdated(function (callable $get, callable $set, $state, $livewire) {
+                            foreach ($state as $addressIndex => $addressItem) {
+                                $contactInfo = $addressItem['contact_info'] ?? [];
+                                
+                                foreach ($contactInfo as $contactIndex => $contactItem) {
+                                    $phonePath = "data.addresses.{$addressIndex}.contact_info.{$contactIndex}.phone";
+                                    $livewire->validateOnly($phonePath);
+                                }
+                            }
+                        })
+                    ->schema([
 
                             Grid::make(2)->schema([
                                 Select::make('country')
@@ -83,6 +94,7 @@ class CustomerResource extends Resource
                             Repeater::make('contact_info')
                             ->label("Contact Info")
                             ->columns(2)
+                            ->required()
                             ->schema([
                                 TextInput::make('email')
                                     ->label(
@@ -110,7 +122,8 @@ class CustomerResource extends Resource
                                     })
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($livewire, $component) {
-                                        $livewire->validateOnly($component->getStatePath());
+                                        dd($component->getStatePath());
+                                        // $livewire->validateOnly($component->getStatePath());
                                     })
                                     ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                         // remove "+" from value 
