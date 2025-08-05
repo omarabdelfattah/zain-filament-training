@@ -48,6 +48,7 @@ class CustomerResource extends Resource
                         ->label('Address Book')
                         ->minItems(1)
                         ->live()
+                        ->relationship('addresses')
                         ->afterStateUpdated(function (callable $get, callable $set, $state, $livewire) {
                             foreach ($state as $addressIndex => $addressItem) {
                                 $contactInfo = $addressItem['contact_info'] ?? [];
@@ -94,6 +95,7 @@ class CustomerResource extends Resource
                             Repeater::make('contact_info')
                             ->label("Contact Info")
                             ->columns(2)
+                            ->relationship('contacts')
                             ->required()
                             ->schema([
                                 TextInput::make('email')

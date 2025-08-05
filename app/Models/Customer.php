@@ -9,8 +9,8 @@ class Customer extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = [
-        'show_contact' => 'boolean',
-        'addresses' => 'array',
-    ];
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
 }
