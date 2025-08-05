@@ -121,10 +121,6 @@ class CustomerResource extends Resource
                                         }
                                     })
                                     ->live(onBlur: true)
-                                    ->afterStateUpdated(function ($livewire, $component) {
-                                        dd($component->getStatePath());
-                                        // $livewire->validateOnly($component->getStatePath());
-                                    })
                                     ->afterStateUpdated(function ($state, callable $get, callable $set) {
                                         // remove "+" from value 
                                         $state = str_replace('+',"",$state);
