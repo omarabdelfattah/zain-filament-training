@@ -41,50 +41,60 @@ class CustomerResource extends Resource
                             ->label('Full name')
                             ->required()
                             ->minLength(2)
-                            ->maxLength(50),
-
-                            
+                            ->maxLength(50)
+                        ,
                         Repeater::make('addresses')
-                        ->label('Address Book')
-                        ->minItems(1)
-                        ->live()
-                        ->relationship('addresses')
+                            ->label('Address Book')
+                            ->minItems(1)
+                            ->default([
+                                [
+                                    'country' => 'EG',
+                                    'city' => 'Cairo',
+                                    'address' => '4th building, 15th St., Nasr City, Cairo, Egypt',
+                                    'contact_info' => [
+                                        ['email' => 'example@test.com', 'phone' => '01011111111'],
+                                        ['email' => 'example2@test.com', 'phone' => '01200000000']
+                                    ]
+                                ]
+                            ])
+                            ->live()
+                            ->relationship('addresses')
                         ->afterStateUpdated(function (callable $get, callable $set, $state, $livewire) {
-                            foreach ($state as $addressIndex => $addressItem) {
-                                $contactInfo = $addressItem['contact_info'] ?? [];
-                                
-                                foreach ($contactInfo as $contactIndex => $contactItem) {
-                                    $phonePath = "data.addresses.{$addressIndex}.contact_info.{$contactIndex}.phone";
-                                    $livewire->validateOnly($phonePath);
+                                foreach ($state as $addressIndex => $addressItem) {
+                                    $contactInfo = $addressItem['contact_info'] ?? [];
+                                    
+                                    foreach ($contactInfo as $contactIndex => $contactItem) {
+                                        $phonePath = "data.addresses.{$addressIndex}.contact_info.{$contactIndex}.phone";
+                                        $livewire->validateOnly($phonePath);
+                                    }
                                 }
-                            }
-                        })
-                    ->schema([
+                            })
+                            ->schema([
 
-                            Grid::make(2)->schema([
-                                Select::make('country')
-                                    ->label('Country')
-                                    ->options(
-                                        collect(json_decode(file_get_contents(public_path('countries.json')), true))
-                                            ->mapWithKeys(fn($val, $key) => [$key => $val['name']])
-                                    )
-                                    ->required()
-                                    ->default('SA')
-                                    ->live()
-                                    // ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire, $component) {
-                                    //         $contactInfo = $get('Contact Info') ?? [];
-                                    //         foreach ($contactInfo as $index => $contactItem) {
-                                    //             $livewire->validateOnly("Contact Info.{$index}.phone");
-                                    //         }
-                                    //     })
-                                    ,
+                                Grid::make(2)->schema([
+                                    Select::make('country')
+                                        ->label('Country')
+                                        ->options(
+                                            collect(json_decode(file_get_contents(public_path('countries.json')), true))
+                                                ->mapWithKeys(fn($val, $key) => [$key => $val['name']])
+                                        )
+                                        ->required()
+                                        ->default('SA')
+                                        ->live()
+                                        // ->afterStateUpdated(function ($state, callable $get, callable $set, $livewire, $component) {
+                                        //         $contactInfo = $get('Contact Info') ?? [];
+                                        //         foreach ($contactInfo as $index => $contactItem) {
+                                        //             $livewire->validateOnly("Contact Info.{$index}.phone");
+                                        //         }
+                                        //     })
+                                        ,
 
-                                TextInput::make('city')
-                                    ->label('City')
-                                    ->required()
-                                    ->maxLength(255),
+                                    TextInput::make('city')
+                                        ->label('City')
+                                        ->required()
+                                        ->maxLength(255),
 
-                            ]),
+                                ]),
 
                             Textarea::make('address')
                             ->label('Address')
